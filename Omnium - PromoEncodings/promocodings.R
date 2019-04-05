@@ -91,32 +91,16 @@ create_promo_coding <- function(data, avg_price,unit_sales, account_label,sku_la
     }
   }
 }
-  
-convert_bool_to_digital<- function(vec){
-  vec[vec == TRUE] <- 1
-  vec[vec == FALSE] <- 0
-  return(vec)
-}
 
 # Returns a vector with the desired promo coding
 promo_coding <- function(data, price_label,base_price_label,unit_sales, wm_weight, bp_weight) {
   prices <- price_to_num(data[[price_label]])
-  print("avg price")
-  print(prices)
   base_prices <- price_to_num(data[[base_price_label]])
-  print("base price")
-  print(base_prices)
   units <- as.numeric(data[[unit_sales]])
-  print("units")
-  print(units)
   
   # Weighted mean approach
   weights <- create_weighting(units)
-  print("weights")
-  print(weights)
   w_price <- weighted.mean(prices, weights, na.rm = TRUE)
-  print("w_price")
-  print(w_price)
   bool_vec <- prices >= w_price - NOISE_CORRECTION_FACTOR
   wm_promo <- convert_bool_to_digital(bool_vec)
   

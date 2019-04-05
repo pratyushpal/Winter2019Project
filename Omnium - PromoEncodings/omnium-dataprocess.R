@@ -67,6 +67,13 @@ price_to_num <- function(vec){
   num_vec <- as.numeric(char_vec)
   return(num_vec)
 }
+
+convert_bool_to_digital<- function(vec){
+  vec[vec == TRUE] <- 1
+  vec[vec == FALSE] <- 0
+  return(vec)
+}
+
 om_data_fix <- function(data, price_cols=c(BASE_PRICE_LABEL, PRICE_LABEL, QUARTER_PRICE_LABEL),
                         char_cols= c(ACCOUNT_LABEL, SKU_LABEL, PG_LABEL, DATE_LABEL),
                         num_cols= c(UNITS_LABEL, DOLLARS_LABEL, ACV_LABEL)) {
