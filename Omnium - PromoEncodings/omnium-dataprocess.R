@@ -61,6 +61,12 @@ convert_dollar_to_num <- function(data=my_data, col_name){
   data[[col_name]] <- as.numeric(char_vec)
 }
 
+price_to_num <- function(vec){
+  char_vec <- as.character(vec)
+  char_vec <- substring(char_vec,DOLLAR_SUBSTRING_VAL)
+  num_vec <- as.numeric(char_vec)
+  return(num_vec)
+}
 om_data_fix <- function(data, price_cols=c(BASE_PRICE_LABEL, PRICE_LABEL, QUARTER_PRICE_LABEL),
                         char_cols= c(ACCOUNT_LABEL, SKU_LABEL, PG_LABEL, DATE_LABEL),
                         num_cols= c(UNITS_LABEL, DOLLARS_LABEL, ACV_LABEL)) {
@@ -69,7 +75,8 @@ om_data_fix <- function(data, price_cols=c(BASE_PRICE_LABEL, PRICE_LABEL, QUARTE
   for(price in price_cols){
     char_vec <- as.character(data[[price]])
     char_vec <- substring(char_vec,DOLLAR_SUBSTRING_VAL)
-    data[[price]] <- as.numeric(char_vec)
+    mutate(data, price = as.numeric(char_vec))
+    print(head(data[[price]]))
   }
   
   # Fixing Text columns
@@ -113,4 +120,9 @@ test_data_fix <- function(data, price_cols=c(BASE_PRICE_LABEL, PRICE_LABEL, QUAR
 
 test_data_fix(my_data)
 currdata <- subset(data, OM.SKU.Name== SKU_NAME & OM.Account== ACCOUNT_NAME)
+test_data_fix(currdata)
 
+dummy <- function(data, label){
+  data[[label]] <- as.character(data[[label]])
+  print(head(data[[label]]))
+}

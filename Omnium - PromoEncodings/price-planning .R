@@ -39,13 +39,21 @@ price_plan_model <- function(data, sku_label = SKU_LABEL, units_label = UNITS_LA
   }
 }
 
-
+my_sum <- function(vec){
+  my_vec <- as.numeric(vec)
+  returnValue(sum(my_vec, na.rm = TRUE))
+}
 get_top <- function(data, name_label, metric_label, number = 5) {
   # returns data frame
- sum_df <- aggregate(data[[metric_label]],data[name_label], my_sum) 
+  
+ sum_df <- aggregate(data[[metric_label]], data[name_label,], my_sum)
  # metric label column will default to x 
- sum_df <- sum_df[order(sum_df$x, decreasing = TRUE),]
+ #sum_df <- sum_df[order(sum_df$x, decreasing = TRUE),]
  
- return(sum_df[[name_label]][1:number])
+ #return(as.character(sum_df[[name_label]][1:number]))
+ print(sum_df)
+ return(sum_df)
  
 }
+
+output <- get_top(my_data, ACCOUNT_LABEL, DOLLARS_LABEL,3)

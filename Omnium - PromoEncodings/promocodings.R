@@ -25,10 +25,8 @@ create_promo_coding <- function(data, avg_price,unit_sales, account_label,sku_la
   om_data_fix(data)
   
   if(type=="all"){
-    my_accounts <- as.character(unique(data[[account_label]])) # O(N^2) worst case -> need to improve this
-    my_skus <-  as.character(unique(data[[sku_label]]))
-    data[[account_label]] <- as.character(data[[account_label]])
-    data[[sku_label]] <- as.character(data[[sku_label]])
+    my_accounts <- unique(data[[account_label]]) # O(N^2) worst case -> need to improve this
+    my_skus <- unique(data[[sku_label]])
     data$base_code <- rep(PLACE_HOLDER_VAL, nrow(data))
     
     #Iterating for each SKU & Account pair
@@ -94,54 +92,72 @@ create_promo_coding <- function(data, avg_price,unit_sales, account_label,sku_la
   }
 }
   
+convert_bool_to_digital<- function(vec){
+  vec[vec == TRUE] <- 1
+  vec[vec == FALSE] <- 0
+  return(vec)
+}
+
+# Returns a vector with the desired promo coding
+promo_coding <- function(data, price_label,base_price_label,unit_sales, wm_weight, bp_weight) {
+  prices <- price_to_num(data[[price_label]])
+  print("avg price")
+  print(prices)
+  base_prices <- price_to_num(data[[base_price_label]])
+  print("base price")
+  print(base_prices)
+  units <- as.numeric(data[[unit_sales]])
+  print("units")
+  print(units)
+  
+  # Weighted mean approach
+  weights <- create_weighting(units)
+  print("weights")
+  print(weights)
+  w_price <- weighted.mean(prices, weights, na.rm = TRUE)
+  print("w_price")
+  print(w_price)
+  bool_vec <- prices >= w_price - NOISE_CORRECTION_FACTOR
+  wm_promo <- convert_bool_to_digital(bool_vec)
+  
+  # Base price approach
+  diff <- base_prices - prices
+  bool_vec <- diff < NOISE_CORRECTION_FACTOR
+  bp_promo <- convert_bool_to_digital(bool_vec)
+  
+  # Model avg
+  
+  avg <- wm_weight* wm_promo + bp_weight * bp_promo
+  bool_vec <- avg >= mean(wm_weight + bp_weight)
+  avg_promo <- convert_bool_to_digital(bool_vec)
+  
+  return(avg_promo)
+  
+}
 
 
-avg_price <- 'Average.Price'
-unit_sales <- 'Unit.Sales'
-sku_label <- 'OM.SKU.Name'
-account_label <- 'OM.Account'
+###################################################################################################################################################################
 
-currdata[[avg_price]] <- as.character(currdata[[avg_price]])
-currdata[[avg_price]] <- substring(currdata[[avg_price]],DOLLAR_SUBSTRING_VAL)
-currdata[[avg_price]] <- as.numeric(currdata[[avg_price]]) 
+# Tests
 
+output <- promo_coding(currdata, PRICE_LABEL, BASE_PRICE_LABEL, UNITS_LABEL, 0.2, 0.8)
 
-myweighting <- create_weighting(currdata[[unit_sales]])
+print(output)
 
-# Setting some starting point for the price based on a weighting by unit sales made on a price
-weighted_avgprice <- weighted.mean(currdata[[avg_price]], myweighting)
-# Adding promocoding to the the data
-currdata <- mutate(currdata, salesweight = myweighting)
-currdata$salesweight[is.na(currdata$salesweight)] <- 0
-
-#converting time period to a date variable
-
-currdata$Time.Period.End.Date <- as.Date(currdata$Time.Period.End.Date, "%m/%d/%Y")
-
-
-# naive filter *should* solve _most_ encoding cases
-bool_vec <- currdata[[avg_price]] >= (weighted_avgprice - NOISE_CORRECTION_FACTOR)
-
-# converting to digital vector
-bool_vec[bool_vec == "TRUE"] <- 1
-bool_vec[bool_vec == "FALSE"] <- 0
-
-currdata <- mutate(currdata, newpromo = bool_vec)
-
-
-# comparing with actual encoding
-new_bool <- bool_vec == currdata$X16oz..Promo.Coding
-print(new_bool)
-
-
+currdata$curr_promo <- output
 
 # Plotting
-
+currdata <- currdata[order(currdata$Time.Period.Continuous.Variable),]
+currdata
 #ggplot(data = currdata) + 
-#  geom_line(mapping = aes(x = currdata$Time.Period.Continuous.Variable,y = currdata$Average.Price)) +
-#  geom_point( mapping = aes(x = currdata$Time.Period.Continuous.Variable,y = currdata$newpromo)) +
+# geom_line(mapping = aes(x = currdata$Time.Period.Continuous.Variable,y = currdata$Average.Price)) +
 # theme(axis.text.x = element_text(angle = 90, vjust = 0.5)) +
 #  scale_x_continuous("Time Period", labels = as.character(currdata$Time.Period.Continuous.Variable), breaks = currdata$Time.Period.Continuous.Variable)
 
 
-#plot(currdata$Time.Period.Continuous.Variable,y = currdata$Average.Price, type='l', ylab = "Average Price", xlab = 'Time Period')
+plot(currdata$Time.Period.Continuous.Variable,y = price_to_num(currdata$Average.Price), type='l', ylab = "Average Price", xlab = 'Time Period', col="red")
+par(new=TRUE)
+plot(currdata$Time.Period.Continuous.Variable,y = currdata$curr_promo,ylab = "", xlab = "", col="blue")
+
+
+
