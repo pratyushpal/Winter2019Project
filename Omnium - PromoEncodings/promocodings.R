@@ -19,25 +19,10 @@ create_weighting <- function(x) {
   return(myweight)
 } 
 
-convert_dollar_to_num <- function(data, col_name){
-  #converting average price to a number
-  data[[col_name]] <- as.character(data[[col_name]])
-  data[[col_name]] <- substring(data[[col_name]],DOLLAR_SUBSTRING_VAL)
-  data[[col_name]] <- as.numeric(data[[col_name]])
-  print(data)
-}
-
-create_promo_coding <- function(data, avg_price,unit_sales, account_label,sku_label, product_group, price_format="$",type="all", pg_label = 'OM.Branded.PG',listofPG = "null" ) {
-  # Correcting price formatting
-  if(price_format == "$") {
-    
-    convert_dollar_to_num(data, avg_price)
-    
-  }else if(price_format == "num"){
-    print("Good price format")
-  }else{
-    print("Bad formatting used")
-  }
+create_promo_coding <- function(data, avg_price,unit_sales, account_label,sku_label, product_group,
+                                price_format="$",type="all", pg_label = 'OM.Branded.PG',listofPG = "null" ) {
+  # Fixing any data formatting issues
+  om_data_fix(data)
   
   if(type=="all"){
     my_accounts <- as.character(unique(data[[account_label]])) # O(N^2) worst case -> need to improve this
@@ -52,7 +37,7 @@ create_promo_coding <- function(data, avg_price,unit_sales, account_label,sku_la
         
         #run promo coding algo
         
-        curr_subset <- subset(data, account_label = account, sku_label = sku)
+        curr_subset <- subset(data, account_label == account, sku_label == sku)
         
         my_weighting <- create_weighting(curr_subset[[unit_sales]])
         my_weighting[is.na(my_weighting)] <- PLACE_HOLDER_VAL
@@ -86,7 +71,7 @@ create_promo_coding <- function(data, avg_price,unit_sales, account_label,sku_la
       for( pg in listofPG){
         for (sku in my_skus){
           for (account in my_accounts){
-            curr_subset <- subset(data, data[[account_label]] = account, data[[sku_label]] = sku)
+            curr_subset <- subset(data, data[[account_label]] == account, data[[sku_label]] == sku)
             
             my_weighting <- create_weighting(curr_subset[[unit_sales]])
             my_weighting[is.na(my_weighting)] <- PLACE_HOLDER_VAL
@@ -142,6 +127,8 @@ bool_vec[bool_vec == "TRUE"] <- 1
 bool_vec[bool_vec == "FALSE"] <- 0
 
 currdata <- mutate(currdata, newpromo = bool_vec)
+
+
 # comparing with actual encoding
 new_bool <- bool_vec == currdata$X16oz..Promo.Coding
 print(new_bool)
