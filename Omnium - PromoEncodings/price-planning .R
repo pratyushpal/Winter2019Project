@@ -57,3 +57,13 @@ get_top <- function(data, name_label, metric_label, number = 5) {
 }
 
 output <- get_top(my_data, ACCOUNT_LABEL, DOLLARS_LABEL,3)
+
+account <- match(as.character(my_data$OM.Account), ACCOUNT_NAME)
+sku <- match(as.character(my_data$OM.SKU.Name), SKU_NAME)
+
+len <- length(account)
+
+sku_acc <- sum(sku, account, na.rm=TRUE)
+tapply(seq_along(sku_acc), sku_acc, max)
+tapply(seq_along(sku_acc), sku_acc, min)
+

@@ -33,6 +33,7 @@ create_promo_coding <- function(data, avg_price,unit_sales, account_label,sku_la
     for(sku in my_skus){
       for(account in my_accounts){
         
+        indices <- which(data[[SKU_LABEL]] == sku & data[[ACCOUNT_LABEL]] == account)
         #run promo coding algo
         
         curr_subset <- subset(data, account_label == account, sku_label == sku)
