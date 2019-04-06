@@ -83,7 +83,6 @@ om_data_fix <- function(data, price_cols=c(BASE_PRICE_LABEL, PRICE_LABEL, QUARTE
     char_vec <- as.character(data[[price]])
     char_vec <- substring(char_vec,DOLLAR_SUBSTRING_VAL)
     mutate(data, price = as.numeric(char_vec))
-    print(head(data[[price]]))
   }
   
   # Fixing Text columns
@@ -125,11 +124,13 @@ test_data_fix <- function(data, price_cols=c(BASE_PRICE_LABEL, PRICE_LABEL, QUAR
   
 }
 
+currdata <- subset(my_data, OM.SKU.Name== SKU_NAME & OM.Account== ACCOUNT_NAME)
+relevant_data <- subset(my_data, Lower.Level == 1)
 test_data_fix(my_data)
-currdata <- subset(data, OM.SKU.Name== SKU_NAME & OM.Account== ACCOUNT_NAME)
 test_data_fix(currdata)
 
 dummy <- function(data, label){
   data[[label]] <- as.character(data[[label]])
   print(head(data[[label]]))
 }
+
