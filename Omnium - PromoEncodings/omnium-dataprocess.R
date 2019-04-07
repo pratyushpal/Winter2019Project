@@ -64,7 +64,7 @@ convert_dollar_to_num <- function(data=my_data, col_name){
 price_to_num <- function(vec){
   char_vec <- as.character(vec)
   char_vec <- substring(char_vec,DOLLAR_SUBSTRING_VAL)
-  num_vec <- as.numeric(char_vec)
+  num_vec <- suppressWarnings(as.numeric(char_vec))
   return(num_vec)
 }
 
