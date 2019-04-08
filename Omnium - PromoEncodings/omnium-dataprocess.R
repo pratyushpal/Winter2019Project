@@ -128,9 +128,3 @@ currdata <- subset(my_data, OM.SKU.Name== SKU_NAME & OM.Account== ACCOUNT_NAME)
 relevant_data <- subset(my_data, Lower.Level == 1)
 test_data_fix(my_data)
 test_data_fix(currdata)
-
-dummy <- function(data, label){
-  data[[label]] <- as.character(data[[label]])
-  print(head(data[[label]]))
-}
-

@@ -17,10 +17,13 @@ DOLLARS_LABEL <- "X."
 #####################################################################################################################################################################
 
 
-price_plan_model <- function(data, sku_label = SKU_LABEL, units_label = UNITS_LABEL, acv_label = ACV_LABEL, 
-                             price_label = PRICE_LABEL, account_label = ACCOUNT_LABEL, trend=0,
-                             date_label = DATE_LABEL, price_array = "null", pg_label = PG_LABEL, 
-                             product_groups = "null") {
+price_plan_model <- function(data, sku_label = SKU_LABEL, units_label = UNITS_LABEL, 
+                             acv_label = ACV_LABEL, price_label = PRICE_LABEL, 
+                             account_label = ACCOUNT_LABEL, trend=0, dollars_label = DOLLARS_LABEL,
+                             date_label = DATE_LABEL, price_array = "null", 
+                             pg_label = PG_LABEL, product_groups = "null") {
+  # Selecting top product groups
+  top_pg <- get_top(low_leveldata, pg_label, DOLLARS_LABEL,3)
   
   # If price_array is null - get an array of suitable prices to run the model with
   # trend is 1 - add a new column for the trend variable onto the data if it doesn't exist already
@@ -37,6 +40,7 @@ price_plan_model <- function(data, sku_label = SKU_LABEL, units_label = UNITS_LA
     # make a tuple for returning the prices
     
   }
+
 }
 
 my_sum <- function(vec){
@@ -46,17 +50,19 @@ my_sum <- function(vec){
 get_top <- function(data, name_label, metric_label, number = 5) {
   # returns data frame
   
- sum_df <- aggregate(data[[metric_label]], data[name_label,], my_sum)
+ sum_df <- aggregate(data[[metric_label]], data[name_label], my_sum)
  # metric label column will default to x 
- #sum_df <- sum_df[order(sum_df$x, decreasing = TRUE),]
- 
- #return(as.character(sum_df[[name_label]][1:number]))
+ sum_df <- sum_df[order(sum_df$x, decreasing = TRUE),]
  print(sum_df)
- return(sum_df)
  
+ return(as.character(sum_df[[name_label]][1:number]))
 }
 
-output <- get_top(my_data, ACCOUNT_LABEL, DOLLARS_LABEL,3)
+low_leveldata <- subset(my_data, my_data$Lower.Level == 1)
+output <- get_top(low_leveldata, ACCOUNT_LABEL, DOLLARS_LABEL,3)
+print(output)
+output <- get_top(low_leveldata, PG_LABEL, DOLLARS_LABEL,3)
+print(output)
 
 account <- match(as.character(my_data$OM.Account), ACCOUNT_NAME)
 sku <- match(as.character(my_data$OM.SKU.Name), SKU_NAME)
