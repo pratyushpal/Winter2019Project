@@ -32,7 +32,7 @@ create_weighting <- function(x) {
 }
 
 # Returns a vector with the desired promo coding
-promo_coding <- function(avg_price,base_price,unit_sales, wm_weight, bp_weight) {
+promo_coding <- function(avg_price,base_price,unit_sales, wm_weight, bp_weight, threshold) {
   prices <- price_to_num(avg_price)
   base_prices <- price_to_num(base_price)
   units <- as.numeric(unit_sales)
@@ -67,9 +67,9 @@ promo_coding <- function(avg_price,base_price,unit_sales, wm_weight, bp_weight) 
 
 }
 
-wpromo_coding <- function(wm_weight, bp_weight){
+wpromo_coding <- function(wm_weight, bp_weight, threshold){
   myfunc <- function(avg_price,base_price,unit_sales){
-    promo_coding(avg_price,base_price,unit_sales, wm_weight, bp_weight)
+    promo_coding(avg_price,base_price,unit_sales, wm_weight, bp_weight, threshold)
   }
 
   return(myfunc)
@@ -79,7 +79,8 @@ wpromo_coding <- function(wm_weight, bp_weight){
 om_promo<- function(data, price_label=PRICE_LABEL,units_label=UNITS_LABEL,
                     account_label=ACCOUNT_LABEL,sku_label= SKU_LABEL,
                     base_price_label=BASE_PRICE_LABEL,pg_label = PG_LABEL,
-                    type="all", product_groups = "null",promo_algo = wpromo_coding(0.2,0.8)) {
+                    base_to_use = "self",type="all", product_groups = "null",
+                    promo_algo = wpromo_coding(0.2,0.8, 0.2)) {
 
   if(type == "all") {
     skus <- unique(as.character(data[[sku_label]]))
@@ -94,7 +95,13 @@ om_promo<- function(data, price_label=PRICE_LABEL,units_label=UNITS_LABEL,
         # Fetching input for promo-coding algo
         avg_prices <- data[[price_label]][my_data[[account_label]] == account & my_data[[sku_label]] == sku]
         units <- data[[units_label]][my_data[[account_label]] == account & my_data[[sku_label]] == sku]
-        base_prices <- data[[base_price_label]][my_data[[account_label]] == account & my_data[[sku_label]] == sku] # this step will change if we implement our own baselines
+
+        # Pick which base prices to select
+        if(base_to_use == "self"){
+          base_prices <- get_baseline(avg_prices)
+        }else if (base_to_use == "data"){
+          base_prices <- data[[base_price_label]][my_data[[account_label]] == account & my_data[[sku_label]] == sku]
+        }
 
         # Promo coding
         curr_promo <- promo_algo(avg_prices, base_prices,units)

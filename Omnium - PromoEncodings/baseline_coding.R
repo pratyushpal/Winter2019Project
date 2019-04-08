@@ -1,6 +1,8 @@
 source("/Users/pratyushpal/Winter2019Project/test/R/promocodings.R")
+
 # Inspiration: Keegan Morissey
 get_baseline <- function(prices, n=13){
+  prices <- price_to_num(prices)
   total_weeks <- length(prices)
   base_price <- numeric(total_weeks)
 

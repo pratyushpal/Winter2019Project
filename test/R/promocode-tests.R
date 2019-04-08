@@ -2,8 +2,8 @@
 
 # Tests
 
-new_coding_alg <- wpromo_coding(0.2, 0.8)
-coding <- om_promo(my_data, 0.2, 0.8, type="all", promo_algo = new_coding_alg)
+new_coding_alg <- wpromo_coding(0.2, 0.8, 0.2)
+coding <- om_promo(my_data, type="all", promo_algo = new_coding_alg)
 
 my_data$new_promo <- coding
 
