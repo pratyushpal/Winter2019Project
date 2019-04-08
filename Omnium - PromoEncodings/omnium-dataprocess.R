@@ -10,7 +10,7 @@ library(tidyverse)
 
 #####################################################################################################################################################################
 
-# Constants 
+# Constants
 
 SKU_LABEL <-"OM.SKU.Name"
 UNITS_LABEL <- "Unit.Sales"
@@ -24,7 +24,7 @@ PG_LABEL <- "OM.Branded.PG" # Assuming mapping is applied
 DOLLARS_LABEL <- "X." # R will default any $ to X
 
 DATA_NAME = 'Yucatan-Trended.csv'
-SKU_NAME = 'CABO FRESH_Authentic Guacamole 12 oz' 
+SKU_NAME = 'CABO FRESH_Authentic Guacamole 12 oz'
 ACCOUNT_NAME = 'Giant Landover_Ahold'
 
 PLACE_HOLDER_VAL <-  0
@@ -35,8 +35,8 @@ NOISE_CORRECTION_FACTOR <- 0.2
 
 
 # reading data
-  
-my_data <- read.csv(DATA_NAME)
+
+my_data <- read.csv('/Users/pratyushpal/Downloads/Yucatan-Trended.csv')
 
 convert_data <- function(data=my_data, col_name, fun){
   #converts all factor level vars to character
@@ -53,7 +53,7 @@ convert_to_num <-  function(data=my_data, col_name){
   return(as.numeric(data[[col_name]]))
 }
 
-  
+
 convert_dollar_to_num <- function(data=my_data, col_name){
   # fixing digits and converting to nunber
   char_vec <- as.character(data[[col_name]])
@@ -77,19 +77,19 @@ convert_bool_to_digital<- function(vec){
 om_data_fix <- function(data, price_cols=c(BASE_PRICE_LABEL, PRICE_LABEL, QUARTER_PRICE_LABEL),
                         char_cols= c(ACCOUNT_LABEL, SKU_LABEL, PG_LABEL, DATE_LABEL),
                         num_cols= c(UNITS_LABEL, DOLLARS_LABEL, ACV_LABEL)) {
-  
+
   # Fixing prices
   for(price in price_cols){
     char_vec <- as.character(data[[price]])
     char_vec <- substring(char_vec,DOLLAR_SUBSTRING_VAL)
     mutate(data, price = as.numeric(char_vec))
   }
-  
+
   # Fixing Text columns
   for(label in char_cols){
     data[[label]] <- as.character(data[[label]])
   }
-  
+
   # Fixing Numeric columns
   for(label in num_cols){
     data[[label]] <- as.numeric(data[[label]])
@@ -102,26 +102,26 @@ test_data_fix <- function(data, price_cols=c(BASE_PRICE_LABEL, PRICE_LABEL, QUAR
                           num_cols= c(UNITS_LABEL, DOLLARS_LABEL, ACV_LABEL)){
   # Applying the function
   om_data_fix(data)
-  
+
   # Testing
   print("Checking prices")
   for(price in price_cols){
     print(head(data[[price]]))
   }
   print("Price checks done")
-  
+
   print("Checking text labels")
   for(label in char_cols){
     print(head(data[[label]]))
   }
   print("Text label checks done ")
-  
+
   print("Checking numeric labels")
   for(label in num_cols){
     print(head(data[[label]]))
   }
   print("Numeric label checks done")
-  
+
 }
 
 currdata <- subset(my_data, OM.SKU.Name== SKU_NAME & OM.Account== ACCOUNT_NAME)
