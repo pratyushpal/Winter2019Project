@@ -45,16 +45,12 @@ promo_coding <- function(avg_price,base_price,unit_sales, wm_weight, bp_weight, 
   # Weighted mean approach
   weights <- create_weighting(units)
   w_price <- weighted.mean(prices, weights, na.rm = TRUE)
-  bool_vec <- prices >= w_price - NOISE_CORRECTION_FACTOR
+  bool_vec <- prices >= w_price - threshold
   wm_promo <- convert_bool_to_digital(bool_vec)
-
-  # Fixing NAs
-  prices[is.na(prices)==TRUE] <- 0
-  base_prices[is.na(prices)==TRUE] <- 0
 
   # Base price approach
   diff <- base_prices - prices
-  bool_vec <- diff < NOISE_CORRECTION_FACTOR
+  bool_vec <- (diff < threshold)
   bp_promo <- convert_bool_to_digital(bool_vec)
 
   # Model avg
@@ -63,7 +59,7 @@ promo_coding <- function(avg_price,base_price,unit_sales, wm_weight, bp_weight, 
   bool_vec <- avg >= mean(wm_weight + bp_weight)
   avg_promo <- convert_bool_to_digital(bool_vec)
 
-  return(avg_promo)
+  return(diff)
 
 }
 
@@ -84,6 +80,7 @@ om_promo<- function(data, price_label=PRICE_LABEL,units_label=UNITS_LABEL,
 
   if(type == "all") {
     skus <- unique(as.character(data[[sku_label]]))
+    print(skus)
     accounts <- unique(as.character(data[[account_label]]))
     base_code <- rep(PLACE_HOLDER_VAL, nrow(data))
 
@@ -91,20 +88,31 @@ om_promo<- function(data, price_label=PRICE_LABEL,units_label=UNITS_LABEL,
       for(account in accounts){
         # Getting the SKU account pair indices
         indices <- which(data[[SKU_LABEL]] == sku & data[[ACCOUNT_LABEL]] == account)
+        print("indices")
+        print(indices)
+        print(sku)
+        print(account)
 
         # Fetching input for promo-coding algo
-        avg_prices <- data[[price_label]][my_data[[account_label]] == account & my_data[[sku_label]] == sku]
-        units <- data[[units_label]][my_data[[account_label]] == account & my_data[[sku_label]] == sku]
+        print("here")
+        units <- data[[units_label]][data[[account_label]] == account & data[[sku_label]] == sku]
+        print(units)
+
+        avg_price <- data[[price_label]][data[[account_label]] == account & data[[sku_label]] == sku]
 
         # Pick which base prices to select
         if(base_to_use == "self"){
           base_prices <- get_baseline(avg_prices)
         }else if (base_to_use == "data"){
-          base_prices <- data[[base_price_label]][my_data[[account_label]] == account & my_data[[sku_label]] == sku]
+          base_prices <- data[[base_price_label]][data[[account_label]] == account & data[[sku_label]] == sku]
         }
+
+        print("base price")
+        print(base_prices)
 
         # Promo coding
         curr_promo <- promo_algo(avg_prices, base_prices,units)
+        curr_promo[is.na(curr_promo)] <- PLACE_HOLDER_VAL
         # Debugging output
         cat(sprintf("Account is: %s \n ", account))
         cat(sprintf("SKU is: %s \n", sku))

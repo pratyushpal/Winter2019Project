@@ -3,6 +3,7 @@
 # Tests for Baseline coding
 
 curr_price <- price_to_num(currdata$Average.Price)
+max(curr_price[j-(n-1):j])
 given_base <- price_to_num(currdata$Base.Price)
 print(curr_price)
 my_base <- get_baseline(curr_price)

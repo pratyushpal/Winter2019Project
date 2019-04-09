@@ -36,7 +36,9 @@ NOISE_CORRECTION_FACTOR <- 0.2
 
 # reading data
 
-my_data <- read.csv('/Users/pratyushpal/Downloads/Yucatan-Trended.csv')
+my_data <- read.csv('/Users/pratyushpal/Downloads/promotest.csv')
+test_data <- subset(my_data, my_data$Lower.Level==1 & my_data$Req.TDP == 1)
+cabo_fresh_auth <- subset(my_data, my_data$Lower.Level == 1 & OM.SKU.Name == SKU_NAME)
 
 convert_data <- function(data=my_data, col_name, fun){
   #converts all factor level vars to character
@@ -65,6 +67,7 @@ price_to_num <- function(vec){
   char_vec <- as.character(vec)
   char_vec <- substring(char_vec,DOLLAR_SUBSTRING_VAL)
   num_vec <- suppressWarnings(as.numeric(char_vec))
+  num_vec[is.na(num_vec)] <- 0
   return(num_vec)
 }
 

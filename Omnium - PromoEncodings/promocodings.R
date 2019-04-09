@@ -48,6 +48,7 @@ promo_code_testing <- function(avg_price, promo, time_period){
 # Returns a vector with the desired promo coding
 promo_coding <- function(avg_price,base_price,unit_sales, wm_weight, bp_weight) {
   prices <- price_to_num(avg_price)
+  print(prices)
   base_prices <- price_to_num(base_price)
   units <- as.numeric(unit_sales)
 
