@@ -47,6 +47,21 @@ yucatan <- subset(my_data, my_data$Lower.Level == 1 & my_data$OM.Branded.PG == "
 
 # Helper functions
 
+output_csv <- function(output_directory,data, file_name){
+  # Store the current directory and switch to it once output is done
+  curr_dir <- getwd()
+
+  #Adding csv to the provided file name
+  output_file_name <- paste(file_name,".csv", sep="")
+
+  # Outputting the file with appropriate name at the given directory
+  setwd(output_directory)
+  write.csv(data, file = output_file_name)
+
+  # Setting directory back to original
+  setwd(curr_dir)
+}
+
 invert <- function(x){
   len <- length(x)
   for (i in range(1:len)){

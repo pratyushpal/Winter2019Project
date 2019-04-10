@@ -10,6 +10,7 @@ source("/Users/pratyushpal/Winter2019Project/test/R/baselinecoding.R")
 PLACE_HOLDER_VAL <-  0
 DOLLAR_SUBSTRING_VAL <- 2
 NOISE_CORRECTION_FACTOR <- 0.2
+ZERO_CORRECTION_VAL <- 100
 
 #####################################################################################################################################################################
 
@@ -29,9 +30,9 @@ acv_coding <- function(data, unit_sales = UNITS_LABEL, base_units = BASE_UNITS_L
     # Correcting for division by 0 errors
     # Setting it to an arbitrary low value so it's always smaller than the threshold
 
-    base_acv[is.na(base_acv)] <- -100
-    base_acv[base_acv == 0] <- -100
-    base_acv[is.nan(base_acv)] <- -100
+    base_acv[is.na(base_acv)] <- -ZERO_CORRECTION_VAL
+    base_acv[base_acv == 0] <- -ZERO_CORRECTION_VAL
+    base_acv[is.nan(base_acv)] <- -ZERO_CORRECTION_VAL
 
     print(base_acv)
 
@@ -43,9 +44,9 @@ acv_coding <- function(data, unit_sales = UNITS_LABEL, base_units = BASE_UNITS_L
     promo_acv <- data[[acv_anymerch]]
     # Correcting for division by 0 errors
     # Setting it to an arbitrary high value so it's always bigger than the threshold
-    promo_acv[is.na(promo_acv)] <- 100
-    promo_acv[promo_acv == 0] <- 100
-    promo_acv[is.nan(promo_acv)] <- 100
+    promo_acv[is.na(promo_acv)] <- ZERO_CORRECTION_VAL
+    promo_acv[promo_acv == 0] <- ZERO_CORRECTION_VAL
+    promo_acv[is.nan(promo_acv)] <- ZERO_CORRECTION_VAL
 
     # Coding
     coding <- promo_acv > acv_anymerch_threshold
@@ -78,7 +79,7 @@ promo_coding <- function(avg_price,base_price, type = "abs",abs_threshold = 0.2,
   # lower than our threshold value and create problems when taking percentage difference. So we set
   # the corresponding base prices an arbitrary high value to correct it.
 
-  base_prices[base_price == 0] <- 100 # Set the zero base prices to an arbitrary large number
+  base_prices[base_price == 0] <- ZERO_CORRECTION_VAL # Set the zero base prices to an arbitrary large number
   diff <- base_prices - prices
   if(type == "abs"){
     bool_vec <- (diff < abs)
