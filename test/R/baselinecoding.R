@@ -1,6 +1,9 @@
 source("/Users/pratyushpal/Winter2019Project/test/R/omnium-dataprocess.R")
 
 # Inspiration: Keegan Morissey
+
+#####################################################################################################################################################################
+
 get_baseline <- function(prices, n=13){
   prices <- prices
   total_weeks <- length(prices)

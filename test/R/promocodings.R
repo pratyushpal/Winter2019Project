@@ -13,7 +13,7 @@ NOISE_CORRECTION_FACTOR <- 0.2
 
 #####################################################################################################################################################################
 
-# returns a vector
+# returns modified data frame
 acv_coding <- function(data, unit_sales = UNITS_LABEL, base_units = BASE_UNITS_LABEL, acv_anymerch = ANY_MERCH_LABEL,
                        type = "base units", base_units_threshold = 0.9, acv_anymerch_threshold = 0.35){
 
@@ -106,12 +106,15 @@ om_promo<- function(data, price_label=PRICE_LABEL,units_label=UNITS_LABEL,
                     dollars_label= DOLLARS_LABEL,account_label=ACCOUNT_LABEL,
                     sku_label= SKU_LABEL,base_price_label=BASE_PRICE_LABEL,
                     pg_label = PG_LABEL,base_to_use = "self",type="all",
-                    product_groups = "null",promo_algo = wpromo_coding("abs",0.2,0.1)) {
+                    product_groups = "null",promo_algo = wpromo_coding("abs",0.2,0.1),
+                    debugging="not verbose") {
 
   if(type == "all") {
     skus <- unique(as.character(data[[sku_label]]))
     accounts <- unique(as.character(data[[account_label]]))
     base_code <- rep(PLACE_HOLDER_VAL, nrow(data))
+    base_units <- rep(PLACE_HOLDER_VAL, nrow(data))
+    base_dollars <- rep(PLACE_HOLDER_VAL, nrow(data))
 
     for(sku in skus){
       for(account in accounts){
@@ -119,6 +122,15 @@ om_promo<- function(data, price_label=PRICE_LABEL,units_label=UNITS_LABEL,
         indices <- which(data[[SKU_LABEL]] == sku & data[[ACCOUNT_LABEL]] == account)
         units <- data[[units_label]][data[[account_label]] == account & data[[sku_label]] == sku]
         dollars <- data[[dollars_label]][data[[account_label]] == account & data[[sku_label]] == sku]
+
+        # Changing type to numeric
+        units <- as.numeric(units)
+        dollars <- as.numeric(dollars)
+
+        # Fixing NAs
+        units[is.na(units)] <- PLACE_HOLDER_VAL
+        dollars[is.na(dollars)] <- PLACE_HOLDER_VAL
+
 
         # Fetching input for promo-coding algo
         avg_prices <- data[[price_label]][data[[account_label]] == account & data[[sku_label]] == sku]
@@ -135,31 +147,52 @@ om_promo<- function(data, price_label=PRICE_LABEL,units_label=UNITS_LABEL,
         }
 
         # Promo coding
-        curr_promo <- promo_algo(avg_prices, base_prices)
+        curr_base <- promo_algo(avg_prices, base_prices)
+
+        # Get base metrics
+        curr_base_units <- get_base_metric(curr_base, units)
+        curr_base_dollars <- get_base_metric(curr_base, dollars)
 
         # Debugging output
         cat(sprintf("Account is: %s \n ", account))
         cat(sprintf("SKU is: %s \n", sku))
-        print("Prices")
-        print(avg_prices)
-        print("Units")
-        print(units)
-        print("Coding")
-        print(curr_promo)
+        if(debugging == "verbose") {
+          print("Prices")
+          print(avg_prices)
+          print("Coding")
+          print(curr_base)
+          print("Units")
+          print(units)
+          print("Base Units")
+          print(curr_base_units)
+          print("Dollars")
+          print(dollars)
+          print("Base Dollars")
+          print(curr_base_dollars)
+        }
 
         for(i in 1:total_weeks){
           index <- indices[i]
           if(avg_prices[i] == 0){
             base_code[index] <- avg_prices[i]
+            base_units[index] <- units[i]
+            base_dollars[index] <- dollars[i]
           }else{
             base_code[index] <- curr_promo[i]
+            base_units[index] <- curr_base_units[i]
+            base_dollars[index] <- curr_base_dollars[i]
           }
         }
       }
     }
 
-    # Returning the base coding
-    return(base_code)
+    # Mutating the data
+
+    data$Auto.Base.Code <- base_code
+    data$Auto.Base.Units <- base_units
+    data$Auto.Base.Dollars <- base_dollars
+
+    return(data)
 
   } else if(type == "pg"){
 

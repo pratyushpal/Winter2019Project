@@ -1,6 +1,7 @@
+
 # Outputs a vector
 # metric can either be a vector with dollar sales or unit sales
-get_base_metric <- function(basecoding, metrics, n = 13){
+get_base_metric <- function(basecoding, metrics, n = 13, debugging="not verbose"){
   total_weeks <- length(metrics)
   my_df <- data.frame("base.coding" = basecoding, "metrics" = metrics)
   # Setting all non-base weeks to have 0 units since we will be correcting them
@@ -51,23 +52,26 @@ get_base_metric <- function(basecoding, metrics, n = 13){
   # Making sure all weeks that have price as 0 have 0 units and that
   # base units are at most units
   for(i in 1:total_weeks){
-    base_metrics[i] <- min(base_metrics[i], metrics[i])
+    if(metrics[i] == 0){
+      base_metrics[i] <- metrics[i]
+    }else{
+      base_metrics[i] <- min(base_metrics[i], metrics[i])
+    }
   }
 
   #Debugging output
-  print("Debugging")
-  cat(sprintf("The given metric values are:\n"))
-  print(metrics)
-  cat(sprintf("The given base coding is:\n"))
-  print(basecoding)
-  cat(sprintf("The predicted base metric values are:\n"))
-  print(base_metrics)
+  if(debugging == "verbose") {
+    print("Debugging")
+    cat(sprintf("The given metric values are:\n"))
+    print(metrics)
+    cat(sprintf("The given base coding is:\n"))
+    print(basecoding)
+    cat(sprintf("The predicted base metric values are:\n"))
+    print(base_metrics)
+  }
 
   return(base_metrics)
 }
 
-mypromo <- om_promo(currdata)
-units <- currdata$Unit.Sales
-dollars <- as.numeric(currdata$X.)
-base_units <- get_base_metric(mypromo, units)
-base_dollars <- get_base_metric(mypromo, dollars)
+#####################################################################################################################################################################
+
