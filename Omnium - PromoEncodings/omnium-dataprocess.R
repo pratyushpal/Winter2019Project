@@ -44,6 +44,30 @@ cabo_fresh <- subset(my_data, my_data$Lower.Level == 1 & my_data$OM.Branded.PG =
 cabo_fresh_auth <- subset(my_data, my_data$Lower.Level == 1 & my_data$OM.SKU.Name == SKU_NAME)
 yucatan <- subset(my_data, my_data$Lower.Level == 1 & my_data$OM.Branded.PG == "YUCATAN_8oz Tub")
 
+
+# Helper functions
+
+invert <- function(x){
+  len <- length(x)
+  for (i in range(1:len)){
+    if(x[i] != 0){
+      x[i] <- 1/x[i]
+    }
+  }
+
+  return(x)
+}
+
+create_weighting <- function(x) {
+  myweight <- x / sum(x^2, na.rm = TRUE)
+  # Want to give higher weight to prices wth lower unit sales since
+  # our intuition says that promo prices have higher unit sales
+  myweight <- invert(x)
+  myweight <- myweight/(sum(myweight^2, na.rm=TRUE))
+
+  return(myweight)
+}
+
 convert_data <- function(data=my_data, col_name, fun){
   #converts all factor level vars to character
   data[[col_name]] <- fun(data[[col_name]])
@@ -102,7 +126,6 @@ om_data_fix <- function(data, price_cols=c(BASE_PRICE_LABEL, PRICE_LABEL, QUARTE
     data[[label]] <- as.numeric(data[[label]])
   }
 }
-
 
 test_data_fix <- function(data, price_cols=c(BASE_PRICE_LABEL, PRICE_LABEL, QUARTER_PRICE_LABEL),
                           char_cols= c(ACCOUNT_LABEL, SKU_LABEL, PG_LABEL, DATE_LABEL),

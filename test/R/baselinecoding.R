@@ -1,4 +1,4 @@
-source("/Users/pratyushpal/Winter2019Project/test/R/promocodings.R")
+source("/Users/pratyushpal/Winter2019Project/test/R/omnium-dataprocess.R")
 
 # Inspiration: Keegan Morissey
 get_baseline <- function(prices, n=13){

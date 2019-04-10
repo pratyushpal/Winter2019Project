@@ -1,5 +1,8 @@
 # Promo coding
 
+source("/Users/pratyushpal/Winter2019Project/test/R/omnium-dataprocess.R")
+source("/Users/pratyushpal/Winter2019Project/test/R/baselinecoding.R")
+
 #####################################################################################################################################################################
 
 # Constants
@@ -9,28 +12,6 @@ DOLLAR_SUBSTRING_VAL <- 2
 NOISE_CORRECTION_FACTOR <- 0.2
 
 #####################################################################################################################################################################
-
-invert <- function(x){
-  len <- length(x)
-  for (i in range(1:len)){
-    if(x[i] != 0){
-      x[i] <- 1/x[i]
-    }
-  }
-
-  return(x)
-}
-
-create_weighting <- function(x) {
-  myweight <- x / sum(x^2, na.rm = TRUE)
-  # Want to give higher weight to prices wth lower unit sales since
-  # our intuition says that promo prices have higher unit sales
-  myweight <- invert(x)
-  myweight <- myweight/(sum(myweight^2, na.rm=TRUE))
-
-  return(myweight)
-}
-
 
 # returns a vector
 acv_coding <- function(data, unit_sales = UNITS_LABEL, base_units = BASE_UNITS_LABEL, acv_anymerch = ANY_MERCH_LABEL,
