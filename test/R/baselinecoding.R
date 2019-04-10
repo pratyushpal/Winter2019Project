@@ -39,9 +39,15 @@ get_baseline <- function(prices, n=13){
     }
 
     # Forcing base price to be at least the average price
+    # Forcing average prices that are 0 to have 0 base price
 
     for(i in 1:total_weeks){
-      base_price[i] <- max(prices[i], base_price[i])
+      if(prices[i] == 0){
+        base_price[i] <- prices[i]
+      }else{
+        base_price[i] <- max(prices[i], base_price[i])
+      }
+
     }
   }
 

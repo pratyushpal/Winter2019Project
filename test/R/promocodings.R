@@ -31,10 +31,57 @@ create_weighting <- function(x) {
   return(myweight)
 }
 
+
+# returns a vector
+acv_coding <- function(data, unit_sales = UNITS_LABEL, base_units = BASE_UNITS_LABEL, acv_anymerch = ANY_MERCH_LABEL,
+                       type = "base units", base_units_threshold = 0.9, acv_anymerch_threshold = 0.35){
+
+  promo_acv <- rep(PLACE_HOLDER_VAL, nrow(data))
+  base_acv <- rep(PLACE_HOLDER_VAL, nrow(data))
+
+  if(type == "base units"){
+
+    base_units <- data[[base_units]]
+    units <- data[[unit_sales]]
+    base_acv <- base_units/units
+
+    # Correcting for division by 0 errors
+    # Setting it to an arbitrary low value so it's always smaller than the threshold
+
+    base_acv[is.na(base_acv)] <- -100
+    base_acv[base_acv == 0] <- -100
+    base_acv[is.nan(base_acv)] <- -100
+
+    print(base_acv)
+
+    # Coding
+    coding <- base_acv > base_units_threshold
+    coding <- convert_bool_to_digital(coding)
+
+  }else if(type == "acv"){
+    promo_acv <- data[[acv_anymerch]]
+    # Correcting for division by 0 errors
+    # Setting it to an arbitrary high value so it's always bigger than the threshold
+    promo_acv[is.na(promo_acv)] <- 100
+    promo_acv[promo_acv == 0] <- 100
+    promo_acv[is.nan(promo_acv)] <- 100
+
+    # Coding
+    coding <- promo_acv > acv_anymerch_threshold
+    coding <- convert_bool_to_digital(coding)
+  }
+
+
+  return(coding)
+}
+
+# promo_coding: Vec(Num) Vec (Num) Vec(Num) Num Num Num Num -> Vec(Num)
 # Returns a vector with the desired promo coding
 promo_coding <- function(avg_price,base_price,unit_sales, wm_weight, bp_weight, threshold) {
-  prices <- price_to_num(avg_price)
-  base_prices <- price_to_num(base_price)
+  #prices <- price_to_num(avg_price)
+  #base_prices <- price_to_num(base_price)
+  prices <- avg_price
+  base_prices <- base_price
   units <- as.numeric(unit_sales)
 
   # Fixing NAs
@@ -43,13 +90,25 @@ promo_coding <- function(avg_price,base_price,unit_sales, wm_weight, bp_weight, 
   units[is.na(units)==TRUE] <- 0
 
   # Weighted mean approach
+
   weights <- create_weighting(units)
   w_price <- weighted.mean(prices, weights, na.rm = TRUE)
   bool_vec <- prices >= w_price - threshold
   wm_promo <- convert_bool_to_digital(bool_vec)
 
   # Base price approach
+
+  # In this approach we evaluate the difference between avg price and base price and code as base/promo
+  # depending on if the difference falls below a set threshold.
+
+  # Since we taking the difference between base and avg price, the zero prices will always differ by
+  # lower than our threshold value and create problems when taking percentage difference. So we set
+  # the corresponding base prices an arbitrary high value to correct it.
+
+  base_prices[base_price == 0] <- 100 # Set the zero base prices to an arbitrary large number
   diff <- base_prices - prices
+  print("here")
+  print(diff)
   bool_vec <- (diff < threshold)
   bp_promo <- convert_bool_to_digital(bool_vec)
 
@@ -59,11 +118,11 @@ promo_coding <- function(avg_price,base_price,unit_sales, wm_weight, bp_weight, 
   bool_vec <- avg >= mean(wm_weight + bp_weight)
   avg_promo <- convert_bool_to_digital(bool_vec)
 
-  return(diff)
+  return(bp_promo)
 
 }
 
-wpromo_coding <- function(wm_weight, bp_weight, threshold){
+ wpromo_coding <- function(wm_weight, bp_weight, threshold){
   myfunc <- function(avg_price,base_price,unit_sales){
     promo_coding(avg_price,base_price,unit_sales, wm_weight, bp_weight, threshold)
   }
@@ -88,31 +147,26 @@ om_promo<- function(data, price_label=PRICE_LABEL,units_label=UNITS_LABEL,
       for(account in accounts){
         # Getting the SKU account pair indices
         indices <- which(data[[SKU_LABEL]] == sku & data[[ACCOUNT_LABEL]] == account)
-        print("indices")
-        print(indices)
-        print(sku)
-        print(account)
 
         # Fetching input for promo-coding algo
-        print("here")
         units <- data[[units_label]][data[[account_label]] == account & data[[sku_label]] == sku]
         print(units)
+        avg_prices <- data[[price_label]][data[[account_label]] == account & data[[sku_label]] == sku]
+        avg_prices <- price_to_num(avg_prices)
 
-        avg_price <- data[[price_label]][data[[account_label]] == account & data[[sku_label]] == sku]
+        total_weeks <- length(avg_prices)
 
         # Pick which base prices to select
         if(base_to_use == "self"){
           base_prices <- get_baseline(avg_prices)
         }else if (base_to_use == "data"){
           base_prices <- data[[base_price_label]][data[[account_label]] == account & data[[sku_label]] == sku]
+          base_prices <- price_to_num(base_prices)
         }
-
-        print("base price")
-        print(base_prices)
 
         # Promo coding
         curr_promo <- promo_algo(avg_prices, base_prices,units)
-        curr_promo[is.na(curr_promo)] <- PLACE_HOLDER_VAL
+
         # Debugging output
         cat(sprintf("Account is: %s \n ", account))
         cat(sprintf("SKU is: %s \n", sku))
@@ -123,8 +177,10 @@ om_promo<- function(data, price_label=PRICE_LABEL,units_label=UNITS_LABEL,
         print("Coding")
         print(curr_promo)
 
-        for(index in indices){
-          base_code[index] <- curr_promo[index]
+        for(i in 1:total_weeks){
+          index <- indices[i]
+          base_code[index] <- curr_promo[i]
+
         }
       }
     }

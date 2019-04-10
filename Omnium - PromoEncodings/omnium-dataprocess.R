@@ -26,6 +26,7 @@ DOLLARS_LABEL <- "X." # R will default any $ to X
 DATA_NAME = 'Yucatan-Trended.csv'
 SKU_NAME = 'CABO FRESH_Authentic Guacamole 12 oz'
 ACCOUNT_NAME = 'Giant Landover_Ahold'
+PG_NAME <- "CABO FRESH_12oz Tub"
 
 PLACE_HOLDER_VAL <-  0
 DOLLAR_SUBSTRING_VAL <- 2
@@ -33,12 +34,15 @@ NOISE_CORRECTION_FACTOR <- 0.2
 
 #####################################################################################################################################################################
 
+# Testing repo
 
 # reading data
 
 my_data <- read.csv('/Users/pratyushpal/Downloads/promotest.csv')
 test_data <- subset(my_data, my_data$Lower.Level==1 & my_data$Req.TDP == 1)
-cabo_fresh_auth <- subset(my_data, my_data$Lower.Level == 1 & OM.SKU.Name == SKU_NAME)
+cabo_fresh <- subset(my_data, my_data$Lower.Level == 1 & my_data$OM.Branded.PG == "CABO FRESH_12oz Tub")
+cabo_fresh_auth <- subset(my_data, my_data$Lower.Level == 1 & my_data$OM.SKU.Name == SKU_NAME)
+yucatan <- subset(my_data, my_data$Lower.Level == 1 & my_data$OM.Branded.PG == "YUCATAN_8oz Tub")
 
 convert_data <- function(data=my_data, col_name, fun){
   #converts all factor level vars to character

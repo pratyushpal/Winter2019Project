@@ -30,7 +30,7 @@ par(new=TRUE)
 plot(currdata$Time.Period.Continuous.Variable,y = currdata$curr_promo,ylab = "", xlab = "", col="blue")
 
 ########################################## Doing promo code function by hand #####################################################################################
-data <- cabo_fresh_auth
+data <- yucatan
 corr_code <- data$Base.code
 skus <- unique(as.character(data[[SKU_LABEL]]))
 accounts <- unique(as.character(data[[ACCOUNT_LABEL]]))
@@ -43,22 +43,55 @@ for(sku in skus){
    avg_price <- data[[PRICE_LABEL]][data[[ACCOUNT_LABEL]] == account & data[[SKU_LABEL]] == sku]
    avg_price <- price_to_num(avg_price)
    num_weeks <- length(units)
+   cat(sprintf("Account is %s\n", account))
+   cat(sprintf("SKU is %s\n", sku))
    print("avg price")
    print(avg_price)
    print("base price")
    base_prices <- get_baseline(avg_price)
+   base_prices[base_prices == 0] <- 100
+   print(base_prices)
    curr_promo <- new_coding_alg(avg_price, base_prices,units)
    correct_code <- data$Base.code[data[[ACCOUNT_LABEL]] == account & data[[SKU_LABEL]] == sku]
-   print(base_prices)
-   print("base code")
+   print("difference")
    print(curr_promo)
    print("curr code")
    print(correct_code)
-   for(index in indices){
-    base_code[index] <- index
+   print("Indices")
+   print(indices)
+   print(length(indices) == length(curr_promo))
+   ind_len <- length(indices)
+   for(i in 1:ind_len) {
+     index <- indices[i]
+     base_code[index] <- curr_promo[i]
    }
  }
 }
 
 print(base_code)
 print(corr_code)
+data$auto_code <- base_code
+
+req_autocode <- data$auto_code[data$Req.TDP == 1]
+req_correct <- data$Base.code[data$Req.TDP == 1]
+
+output <- (req_autocode == req_correct)
+print(output)
+output <- convert_bool_to_digital(output)
+print(output)
+num_corr <- sum(output)
+total_len <- length(req_correct)
+percent_corr <- (num_corr/total_len) * 100
+
+acv_35 <- acv_coding(data, base_units_threshold = 0.9)
+data$acv_35 <- acv_35
+req_35 <- data$acv_35[data$Req.TDP == 1]
+
+output_35 <- (req_35 == req_correct)
+print(output_35)
+output_35 <- convert_bool_to_digital(output_35)
+print(output_35)
+num_corr_35 <- sum(output_35)
+total_len <- length(req_correct)
+percent_corr_35 <- (num_corr_35/total_len) * 100
+
