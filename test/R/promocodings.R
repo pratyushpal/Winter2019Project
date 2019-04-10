@@ -103,14 +103,13 @@ promo_coding <- function(avg_price,base_price, type = "abs",abs_threshold = 0.2,
 
 
 om_promo<- function(data, price_label=PRICE_LABEL,units_label=UNITS_LABEL,
-                    account_label=ACCOUNT_LABEL,sku_label= SKU_LABEL,
-                    base_price_label=BASE_PRICE_LABEL,pg_label = PG_LABEL,
-                    base_to_use = "self",type="all", product_groups = "null",
-                    promo_algo = wpromo_coding("abs",0.2,0.1)) {
+                    dollars_label= DOLLARS_LABEL,account_label=ACCOUNT_LABEL,
+                    sku_label= SKU_LABEL,base_price_label=BASE_PRICE_LABEL,
+                    pg_label = PG_LABEL,base_to_use = "self",type="all",
+                    product_groups = "null",promo_algo = wpromo_coding("abs",0.2,0.1)) {
 
   if(type == "all") {
     skus <- unique(as.character(data[[sku_label]]))
-    print(skus)
     accounts <- unique(as.character(data[[account_label]]))
     base_code <- rep(PLACE_HOLDER_VAL, nrow(data))
 
@@ -118,6 +117,8 @@ om_promo<- function(data, price_label=PRICE_LABEL,units_label=UNITS_LABEL,
       for(account in accounts){
         # Getting the SKU account pair indices
         indices <- which(data[[SKU_LABEL]] == sku & data[[ACCOUNT_LABEL]] == account)
+        units <- data[[units_label]][data[[account_label]] == account & data[[sku_label]] == sku]
+        dollars <- data[[dollars_label]][data[[account_label]] == account & data[[sku_label]] == sku]
 
         # Fetching input for promo-coding algo
         avg_prices <- data[[price_label]][data[[account_label]] == account & data[[sku_label]] == sku]
