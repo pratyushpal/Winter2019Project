@@ -36,11 +36,9 @@ acv_coding <- function(data, unit_sales = UNITS_LABEL, promo_base_units = BASE_P
     base_acv[is.na(base_acv)] <- -ZERO_CORRECTION_VAL
     base_acv[base_acv == 0] <- -ZERO_CORRECTION_VAL
     base_acv[is.nan(base_acv)] <- -ZERO_CORRECTION_VAL
-    promo_base_acv[is.na(promo_acv)] <- -ZERO_CORRECTION_VAL
+    promo_base_acv[is.na(promo_base_acv)] <- -ZERO_CORRECTION_VAL
     promo_base_acv[promo_base_acv == 0] <- -ZERO_CORRECTION_VAL
     promo_base_acv[is.nan(promo_base_acv)] <- -ZERO_CORRECTION_VAL
-
-    print(base_acv)
 
     # Coding
     base_coding <- base_acv > base_units_threshold
@@ -51,7 +49,7 @@ acv_coding <- function(data, unit_sales = UNITS_LABEL, promo_base_units = BASE_P
     promo_base_coding <- convert_bool_to_digital(promo_base_coding)
 
     data$base.units.coding <- base_coding
-    data$promo.base.units.coding <- promo.base.units.coding
+    data$promo.base.units.coding <- promo_base_coding
 
   }else if(type == "acv"){
     promo_acv <- data[[acv_anymerch]]

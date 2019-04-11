@@ -85,6 +85,21 @@ bool_complement <- function(val){
   }
 }
 
+bool_vec_complement <- function(vec){
+  rows <- length(vec)
+  for(i in 1:rows){
+    if(vec[i] == 1){
+      vec[i] <- 0
+    }else if(vec[i] == 0){
+      vec[i] <- 1
+    }else{
+      print("Not a boolean vector")
+    }
+  }
+
+  return(vec)
+}
+
 invert <- function(x){
   len <- length(x)
   for (i in range(1:len)){
