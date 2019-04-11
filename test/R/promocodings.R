@@ -121,7 +121,7 @@ om_promo<- function(data, price_label=PRICE_LABEL,units_label=UNITS_LABEL,
                     sku_label= SKU_LABEL,base_price_label=BASE_PRICE_LABEL,
                     pg_label = PG_LABEL,base_to_use = "self",type="all",
                     product_groups = "null",promo_algo = wpromo_coding("abs",0.2,0.1),
-                    debugging="not verbose") {
+                    debugging="not verbose", longest_promo = 13) {
 
   if(type == "all") {
     skus <- unique(as.character(data[[sku_label]]))
@@ -171,7 +171,7 @@ om_promo<- function(data, price_label=PRICE_LABEL,units_label=UNITS_LABEL,
 
         # Pick which base prices to select
         if(base_to_use == "self"){
-          base_prices <- get_baseline(prices)
+          base_prices <- get_baseline(prices, n = longest_promo)
         }else if (base_to_use == "data"){
           base_prices <- data[[base_price_label]][data[[account_label]] == account & data[[sku_label]] == sku]
           base_prices <- price_to_num(base_prices)
@@ -181,8 +181,8 @@ om_promo<- function(data, price_label=PRICE_LABEL,units_label=UNITS_LABEL,
         curr_base <- promo_algo(prices, base_prices)
 
         # Get base metrics
-        curr_base_units <- get_base_metric(curr_base, units)
-        curr_base_dollars <- get_base_metric(curr_base, dollars)
+        curr_base_units <- get_base_metric(curr_base, units, n = longest_promo)
+        curr_base_dollars <- get_base_metric(curr_base, dollars, n = longest_promo)
 
         # Debugging output
         cat(sprintf("Account is: %s \n ", account))
