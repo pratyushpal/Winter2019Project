@@ -113,7 +113,10 @@ om_promo<- function(data, price_label=PRICE_LABEL,units_label=UNITS_LABEL,
   if(type == "all") {
     skus <- unique(as.character(data[[sku_label]]))
     accounts <- unique(as.character(data[[account_label]]))
+
+    # Making relevant vectors that will be added to the data with correct dimension
     base_code <- rep(PLACE_HOLDER_VAL, nrow(data))
+    base_price <- rep(PLACE_HOLDER_VAL, nrow(data)) # Need to keep this different than the one being later defined
     base_units <- rep(PLACE_HOLDER_VAL, nrow(data))
     base_dollars <- rep(PLACE_HOLDER_VAL, nrow(data))
 
@@ -176,10 +179,12 @@ om_promo<- function(data, price_label=PRICE_LABEL,units_label=UNITS_LABEL,
           index <- indices[i]
           if(avg_prices[i] == 0){
             base_code[index] <- avg_prices[i]
+            base_price[index] <- avg_prices[i]
             base_units[index] <- units[i]
             base_dollars[index] <- dollars[i]
           }else{
             base_code[index] <- curr_promo[i]
+            base_price[index] <- base_prices[i]
             base_units[index] <- curr_base_units[i]
             base_dollars[index] <- curr_base_dollars[i]
           }
@@ -190,6 +195,7 @@ om_promo<- function(data, price_label=PRICE_LABEL,units_label=UNITS_LABEL,
     # Mutating the data
 
     data$Auto.Base.Code <- base_code
+    data$Auto.Base.Price <- base_price
     data$Auto.Base.Units <- base_units
     data$Auto.Base.Dollars <- base_dollars
 
