@@ -49,6 +49,32 @@ output_csv <- function(output_directory,data, file_name){
   setwd(curr_dir)
 }
 
+
+test_coding <- function(correct, calculated){
+  denominator <- length(correct)
+  bool_vec <- correct == calculated
+  output <- convert_bool_to_digital(bool_vec)
+  numerator <- sum(output)
+  correctness <- numerator/denominator * 100
+
+  # Calculating false positives and negatives
+  diff <- calculated - correct
+  false_positives <- length(diff[diff==1])
+  false_negatives <- length(diff[diff==-1])
+  total_incorrect <- false_negatives + false_positives
+  pos_skewness <- false_positives/false_negatives # skewness towards positive
+  neg_skewness <- false_negatives/false_positives # skewness towards negative
+
+  #Printing
+
+  cat(sprintf("Correctness: %f\n", correctness))
+  cat(sprintf("Total incorrect entries: %i\n",total_incorrect))
+  cat(sprintf("Total false positives: %i\n", false_positives))
+  cat(sprintf("Total false negatives: %i\n", false_negatives))
+  cat(sprintf("Skewness towards false positives: %f\n", pos_skewness))
+  cat(sprintf("Skewness towards false negatives: %f\n", neg_skewness))
+}
+
 bool_complement <- function(val){
   if(val == 1){
     returnValue(0)
