@@ -15,8 +15,9 @@ ZERO_CORRECTION_VAL <- 100
 #####################################################################################################################################################################
 
 # returns modified data frame
-acv_coding <- function(data, unit_sales = UNITS_LABEL, base_units = BASE_UNITS_LABEL, acv_anymerch = ANY_MERCH_LABEL,
-                       type = "base units", base_units_threshold = 0.9, acv_anymerch_threshold = 0.35){
+acv_coding <- function(data, unit_sales = UNITS_LABEL, promo_base_units = BASE_PROMO_UNITS_LABEL, base_units = BASE_UNITS_LABEL,
+                       acv_anymerch = ANY_MERCH_LABEL, type = "base units", promo_base_threshold = 0.8,
+                       base_units_threshold = 0.9, acv_anymerch_threshold = 0.35){
 
   promo_acv <- rep(PLACE_HOLDER_VAL, nrow(data))
   base_acv <- rep(PLACE_HOLDER_VAL, nrow(data))
@@ -24,8 +25,10 @@ acv_coding <- function(data, unit_sales = UNITS_LABEL, base_units = BASE_UNITS_L
   if(type == "base units"){
 
     base_units <- data[[base_units]]
+    promo_base_units <- data[[promo_base_units]]
     units <- data[[unit_sales]]
     base_acv <- base_units/units
+    promo_base_acv <- promo_base_units/base_units
 
     # Correcting for division by 0 errors
     # Setting it to an arbitrary low value so it's always smaller than the threshold
@@ -33,12 +36,22 @@ acv_coding <- function(data, unit_sales = UNITS_LABEL, base_units = BASE_UNITS_L
     base_acv[is.na(base_acv)] <- -ZERO_CORRECTION_VAL
     base_acv[base_acv == 0] <- -ZERO_CORRECTION_VAL
     base_acv[is.nan(base_acv)] <- -ZERO_CORRECTION_VAL
+    promo_base_acv[is.na(promo_acv)] <- -ZERO_CORRECTION_VAL
+    promo_base_acv[promo_base_acv == 0] <- -ZERO_CORRECTION_VAL
+    promo_base_acv[is.nan(promo_base_acv)] <- -ZERO_CORRECTION_VAL
 
     print(base_acv)
 
     # Coding
-    coding <- base_acv > base_units_threshold
-    coding <- convert_bool_to_digital(coding)
+    base_coding <- base_acv > base_units_threshold
+    promo_base_coding <- promo_base_acv > promo_base_threshold
+
+    # Correcting to booleans
+    base_coding <- convert_bool_to_digital(base_coding)
+    promo_base_coding <- convert_bool_to_digital(promo_base_coding)
+
+    data$base.units.coding <- base_coding
+    data$promo.base.units.coding <- promo.base.units.coding
 
   }else if(type == "acv"){
     promo_acv <- data[[acv_anymerch]]
@@ -51,10 +64,12 @@ acv_coding <- function(data, unit_sales = UNITS_LABEL, base_units = BASE_UNITS_L
     # Coding
     coding <- promo_acv > acv_anymerch_threshold
     coding <- convert_bool_to_digital(coding)
+
+    data$acv.coding <- coding
   }
 
 
-  return(coding)
+  return(data)
 }
 
 # promo_coding: Vec(Num) Vec (Num) Vec(Num) Num Num Num Num -> Vec(Num)

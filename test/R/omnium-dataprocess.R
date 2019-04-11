@@ -20,6 +20,7 @@ DATE_LABEL <- "OM.DATE" # Assumption based on what I named it
 PG_LABEL <- "OM.Branded.PG" # Assuming mapping is applied
 DOLLARS_LABEL <- "X." # R will default any $ to X
 BASE_UNITS_LABEL <- "Base.Unit.Sales"
+BASE_PROMO_UNITS_LABEL <- "Base.Unit.Sales.Any.Merch"
 ANY_MERCHANT_LABEL <- "ACV.Weighted.Distribution.Any.Merch"
 
 PLACE_HOLDER_VAL <-  0
