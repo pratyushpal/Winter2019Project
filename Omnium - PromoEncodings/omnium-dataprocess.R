@@ -39,6 +39,7 @@ NOISE_CORRECTION_FACTOR <- 0.2
 # reading data
 
 my_data <- read.csv('/Users/pratyushpal/Downloads/promotest.csv')
+clif_data <- read.csv('/Users/pratyushpal/Downloads/canada-clif.csv')
 test_data <- subset(my_data, my_data$Lower.Level==1)
 cabo_fresh <- subset(my_data, my_data$Lower.Level == 1 & my_data$OM.Branded.PG == "CABO FRESH_12oz Tub")
 cabo_fresh_auth <- subset(my_data, my_data$Lower.Level == 1 & my_data$OM.SKU.Name == SKU_NAME)

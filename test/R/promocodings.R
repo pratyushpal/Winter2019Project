@@ -147,7 +147,7 @@ om_promo<- function(data, price_label=PRICE_LABEL,units_label=UNITS_LABEL,
     for(sku in skus){
       for(account in accounts){
         # Getting the SKU account pair indices
-        indices <- which(data[[SKU_LABEL]] == sku & data[[ACCOUNT_LABEL]] == account)
+        indices <- which(data[[sku_label]] == sku & data[[account_label]] == account)
         units <- data[[units_label]][data[[account_label]] == account & data[[sku_label]] == sku]
         dollars <- data[[dollars_label]][data[[account_label]] == account & data[[sku_label]] == sku]
         units <- as.numeric(units)
@@ -200,6 +200,8 @@ om_promo<- function(data, price_label=PRICE_LABEL,units_label=UNITS_LABEL,
           print(dollars)
           print("Base Dollars")
           print(curr_base_dollars)
+          print("Indices")
+          print(indices)
         }
 
         for(i in 1:total_weeks){
