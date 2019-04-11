@@ -39,7 +39,7 @@ NOISE_CORRECTION_FACTOR <- 0.2
 # reading data
 
 my_data <- read.csv('/Users/pratyushpal/Downloads/promotest.csv')
-test_data <- subset(my_data, my_data$Lower.Level==1 & my_data$Req.TDP == 1)
+test_data <- subset(my_data, my_data$Lower.Level==1)
 cabo_fresh <- subset(my_data, my_data$Lower.Level == 1 & my_data$OM.Branded.PG == "CABO FRESH_12oz Tub")
 cabo_fresh_auth <- subset(my_data, my_data$Lower.Level == 1 & my_data$OM.SKU.Name == SKU_NAME)
 yucatan <- subset(my_data, my_data$Lower.Level == 1 & my_data$OM.Branded.PG == "YUCATAN_8oz Tub")
@@ -60,6 +60,16 @@ output_csv <- function(output_directory,data, file_name){
 
   # Setting directory back to original
   setwd(curr_dir)
+}
+
+bool_complement <- function(val){
+  if(val == 1){
+    returnValue(0)
+  }else if(val == 0){
+    returnValue(1)
+  }else{
+    print("Not a boolean value")
+  }
 }
 
 invert <- function(x){

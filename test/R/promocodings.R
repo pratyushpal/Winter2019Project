@@ -113,12 +113,23 @@ om_promo<- function(data, price_label=PRICE_LABEL,units_label=UNITS_LABEL,
   if(type == "all") {
     skus <- unique(as.character(data[[sku_label]]))
     accounts <- unique(as.character(data[[account_label]]))
+  }else if(type == "pg"){
+    if(product_groups == "null"){
+      print("Please input a vector of required product group labels")
+    }else{
+      pg_subset <- subset(data, data[[pg_label]] %in% product_groups) # Find a more efficient way to get unique skus and accounts at these PGs
+      skus <- unique(as.character(pg_subset[[sku_label]]))
+      accounts <- unique(as.character(pg_subset[[account_label]]))
+    }
+  }
 
     # Making relevant vectors that will be added to the data with correct dimension
+
     base_code <- rep(PLACE_HOLDER_VAL, nrow(data))
     base_price <- rep(PLACE_HOLDER_VAL, nrow(data)) # Need to keep this different than the one being later defined
     base_units <- rep(PLACE_HOLDER_VAL, nrow(data))
     base_dollars <- rep(PLACE_HOLDER_VAL, nrow(data))
+    promo_code <-  rep(PLACE_HOLDER_VAL, nrow(data))
 
     for(sku in skus){
       for(account in accounts){
@@ -126,6 +137,12 @@ om_promo<- function(data, price_label=PRICE_LABEL,units_label=UNITS_LABEL,
         indices <- which(data[[SKU_LABEL]] == sku & data[[ACCOUNT_LABEL]] == account)
         units <- data[[units_label]][data[[account_label]] == account & data[[sku_label]] == sku]
         dollars <- data[[dollars_label]][data[[account_label]] == account & data[[sku_label]] == sku]
+        units <- as.numeric(units)
+        dollars <- as.numeric(dollars)
+        prices <- dollars/units
+        prices[is.na(prices)] <- PLACE_HOLDER_VAL
+        prices[is.nan(prices)] <- PLACE_HOLDER_VAL
+        prices <- round(prices, 2)
 
         # Changing type to numeric
         units <- as.numeric(units)
@@ -136,22 +153,19 @@ om_promo<- function(data, price_label=PRICE_LABEL,units_label=UNITS_LABEL,
         dollars[is.na(dollars)] <- PLACE_HOLDER_VAL
 
 
-        # Fetching input for promo-coding algo
-        avg_prices <- data[[price_label]][data[[account_label]] == account & data[[sku_label]] == sku]
-        avg_prices <- price_to_num(avg_prices)
-
-        total_weeks <- length(avg_prices)
+        # Fetching loop range
+        total_weeks <- length(prices)
 
         # Pick which base prices to select
         if(base_to_use == "self"){
-          base_prices <- get_baseline(avg_prices)
+          base_prices <- get_baseline(prices)
         }else if (base_to_use == "data"){
           base_prices <- data[[base_price_label]][data[[account_label]] == account & data[[sku_label]] == sku]
           base_prices <- price_to_num(base_prices)
         }
 
         # Promo coding
-        curr_base <- promo_algo(avg_prices, base_prices)
+        curr_base <- promo_algo(prices, base_prices)
 
         # Get base metrics
         curr_base_units <- get_base_metric(curr_base, units)
@@ -162,7 +176,7 @@ om_promo<- function(data, price_label=PRICE_LABEL,units_label=UNITS_LABEL,
         cat(sprintf("SKU is: %s \n", sku))
         if(debugging == "verbose") {
           print("Prices")
-          print(avg_prices)
+          print(prices)
           print("Coding")
           print(curr_base)
           print("Units")
@@ -177,13 +191,15 @@ om_promo<- function(data, price_label=PRICE_LABEL,units_label=UNITS_LABEL,
 
         for(i in 1:total_weeks){
           index <- indices[i]
-          if(avg_prices[i] == 0){
-            base_code[index] <- avg_prices[i]
-            base_price[index] <- avg_prices[i]
+          if(prices[i] == 0){
+            promo_code[index] <- prices[i]
+            base_code[index] <- prices[i]
+            base_price[index] <- prices[i]
             base_units[index] <- units[i]
             base_dollars[index] <- dollars[i]
           }else{
-            base_code[index] <- curr_promo[i]
+            promo_code[index] <- bool_complement(curr_base[i])
+            base_code[index] <- curr_base[i]
             base_price[index] <- base_prices[i]
             base_units[index] <- curr_base_units[i]
             base_dollars[index] <- curr_base_dollars[i]
@@ -194,16 +210,13 @@ om_promo<- function(data, price_label=PRICE_LABEL,units_label=UNITS_LABEL,
 
     # Mutating the data
 
+    data$Auto.Promo.Code <- promo_code
     data$Auto.Base.Code <- base_code
     data$Auto.Base.Price <- base_price
     data$Auto.Base.Units <- base_units
     data$Auto.Base.Dollars <- base_dollars
 
     return(data)
-
-  } else if(type == "pg"){
-
-  }
 
 }
 

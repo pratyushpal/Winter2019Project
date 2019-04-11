@@ -1,9 +1,13 @@
 
+#####################################################################################################################################################################
+
+# Helper Utility functions for this module
+
 # function to round the closest number
 round_to_closer <- function(num, upper, lower){
   upper_diff <- abs(upper - num)
   lower_diff <- abs(num - lower)
-  
+
   if(upper_diff <= lower_diff){
     return(upper)
   }else{
@@ -11,9 +15,7 @@ round_to_closer <- function(num, upper, lower){
   }
 }
 
-round_to_closer(4.89, 4.99, 4.79)
-
-# rounds to the nearest quarter price 
+# rounds to the nearest quarter price
 round_to_quarter <- function(price){
     floor <- floor(price)
     prev_int <- floor - 1
@@ -43,6 +45,8 @@ round_to_quarter <- function(price){
     }
 }
 
+#####################################################################################################################################################################
+
 # Outputs a vector of quarter prices
 quarter_prices <- function(prices){
   output <- lapply(prices, round_to_quarter)
@@ -51,8 +55,4 @@ quarter_prices <- function(prices){
   return(output)
 }
 
-# Tests
-round_to_quarter(3.19)
-prices <- c(0.1, 2.19, 16.57, 4.89, 5.67)
-qtr_prices <- quarter_prices(prices)
-print(qtr_prices)
+#####################################################################################################################################################################

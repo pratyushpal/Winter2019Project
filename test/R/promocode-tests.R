@@ -35,7 +35,7 @@ corr_code <- data$Base.code
 skus <- unique(as.character(data[[SKU_LABEL]]))
 accounts <- unique(as.character(data[[ACCOUNT_LABEL]]))
 base_code <- rep(PLACE_HOLDER_VAL, nrow(data))
-curr_alg <- wpromo_coding(0,1,0.2)
+curr_alg <- wpromo_coding("abs",0.2,0.1)
 for(sku in skus){
  for(account in accounts){
    indices <- which(data[[SKU_LABEL]] == sku & data[[ACCOUNT_LABEL]] == account)
@@ -51,7 +51,7 @@ for(sku in skus){
    base_prices <- get_baseline(avg_price)
    base_prices[base_prices == 0] <- 100
    print(base_prices)
-   curr_promo <- new_coding_alg(avg_price, base_prices,units)
+   curr_promo <- curr_alg(avg_price, base_prices)
    correct_code <- data$Base.code[data[[ACCOUNT_LABEL]] == account & data[[SKU_LABEL]] == sku]
    print("difference")
    print(curr_promo)
