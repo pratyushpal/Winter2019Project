@@ -97,7 +97,7 @@ promo_coding <- function(avg_price,base_price, type = "abs",abs_threshold = 0.2,
   if(type == "abs"){
     bool_vec <- (diff < abs)
   }else if (type == "percent") {
-    threshold <- percent * prices
+    threshold <- percent * base_prices
     bool_vec <- (diff < threshold)
   }
   bp_promo <- convert_bool_to_digital(bool_vec)
@@ -106,7 +106,7 @@ promo_coding <- function(avg_price,base_price, type = "abs",abs_threshold = 0.2,
 
 }
 
- wpromo_coding <- function(type, abs_threshold, percent_threshold) {
+ wpromo_coding <- function(type = "percent", abs_threshold = 0.2, percent_threshold = 0.1) {
 
    myfunc <- function(avg_price,base_price) {
     promo_coding(avg_price,base_price,type, abs_threshold, percent_threshold)
